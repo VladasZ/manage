@@ -1,20 +1,18 @@
 [package]
-name = "manage"
-version = "0.1.2"
+name = "test"
+version = "0.1.0"
 edition = "2021"
 authors = ["Vladas Zakrevksis <146100@gmail.com>"]
-description = "Data manager"
-license = "MIT OR Apache-2.0"
-homepage = "https://github.com/VladasZ/refs"
-repository = "https://github.com/VladasZ/refs"
+
 
 [lib]
-name = "manage"
+name = "manage_test"
 crate-type = ["rlib", "staticlib", "dylib"]
 
 [dependencies]
 log = "0.4.20"
 refs = "0.6.13"
+manage = { path = "../manage" }
 
 [dev-dependencies]
 serial_test = "3.0.0"

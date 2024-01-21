@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use log::warn;
 use refs::Own;
@@ -7,7 +7,7 @@ use crate::{handle::Handle, misc::hash, DataStorage, Managed};
 
 pub trait DataManager<T: Managed> {
     fn root_path() -> &'static Path;
-    fn set_root_path(path: &Path);
+    fn set_root_path(path: impl Into<PathBuf>);
 
     fn storage() -> &'static mut DataStorage<T>;
 
