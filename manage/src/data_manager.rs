@@ -41,6 +41,16 @@ pub trait DataManager<T: Managed> {
         Self::storage().get(&hash).map(Own::weak)
     }
 
+    fn free(weak: Weak<T>) {
+        let mut storage = Self::storage();
+        let key = *storage
+            .iter()
+            .find(|(_, val)| val.addr() == weak.addr())
+            .expect("Failed to find object to free.")
+            .0;
+        storage.remove(&key);
+    }
+
     fn remove_with_name(name: impl ToString) {
         Self::remove_with_hash(hash(name.to_string()))
     }
