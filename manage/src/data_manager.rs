@@ -42,6 +42,9 @@ pub trait DataManager<T: Managed> {
     }
 
     fn free(weak: Weak<T>) {
+        if weak.is_null() {
+            return;
+        }
         let mut storage = Self::storage();
         let key = *storage
             .iter()
