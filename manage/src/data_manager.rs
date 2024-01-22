@@ -1,22 +1,25 @@
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::MutexGuard,
+};
 
 use log::warn;
-use refs::Own;
+use refs::{Own, Weak};
 
-use crate::{handle::Handle, misc::hash, DataStorage, Managed};
+use crate::{misc::hash, DataStorage, Managed};
 
 pub trait DataManager<T: Managed> {
     fn root_path() -> &'static Path;
     fn set_root_path(path: impl Into<PathBuf>);
 
-    fn storage() -> &'static mut DataStorage<T>;
+    fn storage() -> MutexGuard<'static, DataStorage<T>>;
 
-    fn add_with_name(name: impl ToString, resource: T) -> Handle<T> {
+    fn add_with_name(name: impl ToString, resource: T) -> Weak<T> {
         Self::add_with_hash(hash(name.to_string()), resource)
     }
 
-    fn add_with_hash(hash: u64, resource: T) -> Handle<T> {
-        let storage = Self::storage();
+    fn add_with_hash(hash: u64, resource: T) -> Weak<T> {
+        let mut storage = Self::storage();
         if storage.contains_key(&hash) {
             warn!(
                 "Object of type '{}' with hash: '{}' already exists",
@@ -24,20 +27,18 @@ pub trait DataManager<T: Managed> {
                 hash
             );
         }
-        storage.insert(hash, Own::new(resource));
-        hash.into()
+        let resource = Own::new(resource);
+        let weak = resource.weak();
+        storage.insert(hash, resource);
+        weak
     }
 
-    fn handle_with_name(name: impl ToString) -> Option<Handle<T>> {
-        Self::handle_with_hash(hash(name.to_string()))
+    fn weak_with_name(name: impl ToString) -> Option<Weak<T>> {
+        Self::weak_with_hash(hash(name.to_string()))
     }
 
-    fn handle_with_hash(hash: u64) -> Option<Handle<T>> {
-        if Self::storage().contains_key(&hash) {
-            Some(hash.into())
-        } else {
-            None
-        }
+    fn weak_with_hash(hash: u64) -> Option<Weak<T>> {
+        Self::storage().get(&hash).map(Own::weak)
     }
 
     fn remove_with_name(name: impl ToString) {
@@ -48,29 +49,25 @@ pub trait DataManager<T: Managed> {
         Self::storage().remove(&hash);
     }
 
-    fn get_ref_by_hash(hash: u64) -> &'static T {
-        Self::storage().get(&hash).unwrap()
+    fn get_weak_by_hash(hash: u64) -> Weak<T> {
+        Self::storage().get(&hash).unwrap().weak()
     }
 
-    fn get_ref_by_hash_mut(hash: u64) -> &'static mut T {
-        Self::storage().get_mut(&hash).unwrap()
-    }
-
-    fn get(name: impl ToString) -> Handle<T> {
+    fn get(name: impl ToString) -> Weak<T> {
         let name = name.to_string();
         let hash = hash(&name);
-        Self::storage()
+        let mut storage = Self::storage();
+        let val = storage
             .entry(hash)
             .or_insert_with(|| Own::new(T::load_path(&Self::root_path().join(name))));
-        hash.into()
+        val.weak()
     }
 
-    fn load(data: &[u8], name: impl ToString) -> Handle<T> {
+    fn load(data: &[u8], name: impl ToString) -> Weak<T> {
         let name = name.to_string();
         let hash = hash(&name);
-        Self::storage()
-            .entry(hash)
-            .or_insert_with(|| Own::new(T::load_data(data, name)));
-        hash.into()
+        let mut storage = Self::storage();
+        let val = storage.entry(hash).or_insert_with(|| Own::new(T::load_data(data, name)));
+        val.weak()
     }
 }

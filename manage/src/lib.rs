@@ -5,7 +5,6 @@ use refs::Own;
 use crate::{data_manager::DataManager, resource_loader::ResourceLoader};
 
 pub mod data_manager;
-pub mod handle;
 pub mod managed;
 mod misc;
 pub mod resource_loader;

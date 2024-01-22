@@ -2,7 +2,8 @@
 macro_rules! managed {
     ($type:ident) => {
         static _MANAGED_ROOT_PATH: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
-        static mut STORAGE: *mut manage::DataStorage<$type> = std::ptr::null_mut();
+        static _STORAGE: std::sync::OnceLock<std::sync::Mutex<manage::DataStorage<$type>>> =
+            std::sync::OnceLock::new();
 
         impl manage::Managed for $type {}
 
@@ -25,13 +26,11 @@ macro_rules! managed {
                 }
             }
 
-            fn storage() -> &'static mut manage::DataStorage<$type> {
-                unsafe {
-                    if STORAGE.is_null() {
-                        STORAGE = Box::into_raw(Box::new(Default::default()));
-                    }
-                    STORAGE.as_mut().unwrap()
-                }
+            fn storage() -> std::sync::MutexGuard<'static, manage::DataStorage<$type>> {
+                _STORAGE
+                    .get_or_init(|| std::sync::Mutex::new(Default::default()))
+                    .lock()
+                    .unwrap()
             }
         }
     };

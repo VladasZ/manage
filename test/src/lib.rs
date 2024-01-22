@@ -1,3 +1,5 @@
+#![feature(const_trait_impl)]
+#![feature(effects)]
 #![cfg(test)]
 
 use std::path::Path;
