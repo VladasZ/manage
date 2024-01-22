@@ -1,9 +1,10 @@
 use std::{
+    any::type_name,
     path::{Path, PathBuf},
     sync::MutexGuard,
 };
 
-use log::warn;
+use log::error;
 use refs::{Own, Weak};
 
 use crate::{misc::hash, DataStorage, Managed};
@@ -21,11 +22,14 @@ pub trait DataManager<T: Managed> {
     fn add_with_hash(hash: u64, resource: T) -> Weak<T> {
         let mut storage = Self::storage();
         if storage.contains_key(&hash) {
-            warn!(
-                "Object of type '{}' with hash: '{}' already exists",
-                std::any::type_name::<T>().to_string(),
-                hash
+            error!(
+                "Object of type '{}' with hash: '{hash}' already exists",
+                type_name::<T>(),
             );
+            panic!(
+                "Object of type '{}' with hash: '{hash}' already exists",
+                type_name::<T>(),
+            )
         }
         let resource = Own::new(resource);
         let weak = resource.weak();
