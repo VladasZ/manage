@@ -7,7 +7,7 @@ use std::{
 use log::error;
 use refs::{Own, Weak};
 
-use crate::{misc::hash, DataStorage, Managed};
+use crate::{DataStorage, Managed};
 
 pub trait DataManager<T: Managed> {
     fn root_path() -> &'static Path;
@@ -16,33 +16,26 @@ pub trait DataManager<T: Managed> {
     fn storage() -> MutexGuard<'static, DataStorage<T>>;
 
     fn add_with_name(name: impl ToString, resource: T) -> Weak<T> {
-        Self::add_with_hash(hash(name.to_string()), resource)
-    }
-
-    fn add_with_hash(hash: u64, resource: T) -> Weak<T> {
+        let name = name.to_string();
         let mut storage = Self::storage();
-        if storage.contains_key(&hash) {
+        if storage.contains_key(&name) {
             error!(
-                "Object of type '{}' with hash: '{hash}' already exists",
+                "Object of type '{}' with name: '{name}' already exists",
                 type_name::<T>(),
             );
             panic!(
-                "Object of type '{}' with hash: '{hash}' already exists",
+                "Object of type '{}' with name: '{name}' already exists",
                 type_name::<T>(),
             )
         }
         let resource = Own::new(resource);
         let weak = resource.weak();
-        storage.insert(hash, resource);
+        storage.insert(name, resource);
         weak
     }
 
-    fn weak_with_name(name: impl ToString) -> Option<Weak<T>> {
-        Self::weak_with_hash(hash(name.to_string()))
-    }
-
-    fn weak_with_hash(hash: u64) -> Option<Weak<T>> {
-        Self::storage().get(&hash).map(Own::weak)
+    fn weak_with_name(name: &str) -> Option<Weak<T>> {
+        Self::storage().get(name).map(Own::weak)
     }
 
     fn free(weak: Weak<T>) {
@@ -50,41 +43,34 @@ pub trait DataManager<T: Managed> {
             return;
         }
         let mut storage = Self::storage();
-        let key = *storage
+        let key = storage
             .iter()
             .find(|(_, val)| val.addr() == weak.addr())
             .expect("Failed to find object to free.")
-            .0;
+            .0
+            .clone();
         storage.remove(&key);
     }
 
-    fn remove_with_name(name: impl ToString) {
-        Self::remove_with_hash(hash(name.to_string()))
-    }
-
-    fn remove_with_hash(hash: u64) {
-        Self::storage().remove(&hash);
-    }
-
-    fn get_weak_by_hash(hash: u64) -> Weak<T> {
-        Self::storage().get(&hash).unwrap().weak()
+    fn remove_with_name(name: &str) {
+        Self::storage().remove(name);
     }
 
     fn get(name: impl ToString) -> Weak<T> {
         let name = name.to_string();
-        let hash = hash(&name);
         let mut storage = Self::storage();
         let val = storage
-            .entry(hash)
+            .entry(name.clone())
             .or_insert_with(|| Own::new(T::load_path(&Self::root_path().join(name))));
         val.weak()
     }
 
     fn load(data: &[u8], name: impl ToString) -> Weak<T> {
         let name = name.to_string();
-        let hash = hash(&name);
         let mut storage = Self::storage();
-        let val = storage.entry(hash).or_insert_with(|| Own::new(T::load_data(data, name)));
+        let val = storage
+            .entry(name.clone())
+            .or_insert_with(|| Own::new(T::load_data(data, name)));
         val.weak()
     }
 }
