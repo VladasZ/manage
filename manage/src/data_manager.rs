@@ -1,7 +1,6 @@
-use std::{
-    ops::Deref,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
+
+use refs::{Own, Weak};
 
 use crate::{DataStorage, Managed};
 
@@ -11,31 +10,50 @@ pub trait DataManager<T: Managed> {
 
     fn storage() -> &'static mut DataStorage<T>;
 
-    fn add_with_name(name: &str, create: impl FnOnce() -> T) -> &'static T {
-        Self::storage().entry(name.to_string()).or_insert_with(|| create().into())
+    fn free(self: Weak<Self>) {
+        if self.is_null() {
+            return;
+        }
+        let storage = Self::storage();
+        let key = storage
+            .iter()
+            .find(|(_, val)| val.addr() == self.addr())
+            .expect("Failed to find object to free.")
+            .0
+            .clone();
+        storage.remove(&key);
     }
 
-    fn remove_with_name(name: &str) {
-        Self::storage().remove(name).expect("This name '{name}' is not managed.");
+    fn add_with_name(name: &str, create: impl FnOnce() -> T) -> Weak<T> {
+        Self::storage()
+            .entry(name.to_string())
+            .or_insert_with(|| Own::new(create()))
+            .weak()
     }
 
-    fn get_existing(name: impl ToString) -> Option<&'static T> {
-        Self::storage().get(&name.to_string()).map(|a| a.deref())
+    fn get_static(self: Weak<Self>) -> &'static T {
+        Self::storage()
+            .iter()
+            .find(|(_, val)| val.addr() == self.addr())
+            .expect("Failed to get_static managed")
+            .1
     }
 
-    fn get(name: impl ToString) -> &'static T {
+    fn get(name: impl ToString) -> Weak<T> {
         let name = name.to_string();
         let storage = Self::storage();
         let val = storage
             .entry(name.clone())
-            .or_insert_with(|| T::load_path(&Self::root_path().join(name)).into());
-        val
+            .or_insert_with(|| Own::new(T::load_path(&Self::root_path().join(name))));
+        val.weak()
     }
 
-    fn load(data: &[u8], name: impl ToString) -> &'static T {
+    fn load(data: &[u8], name: impl ToString) -> Weak<T> {
         let name = name.to_string();
         let storage = Self::storage();
-        let val = storage.entry(name.clone()).or_insert_with(|| T::load_data(data, name).into());
-        val
+        let val = storage
+            .entry(name.clone())
+            .or_insert_with(|| Own::new(T::load_data(data, name)));
+        val.weak()
     }
 }

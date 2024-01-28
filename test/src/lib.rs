@@ -42,7 +42,7 @@ fn test() {
     assert_eq!(data.a, 0);
     assert_eq!(data.name, "some_data");
 
-    Data::remove_with_name("a");
+    data.free();
 
     let data = Data::get("a");
 
@@ -61,4 +61,5 @@ fn test() {
     });
 
     assert_eq!(Data::get("b").a, 2);
+    assert_eq!(Data::get("b").get_static().a, 2);
 }
