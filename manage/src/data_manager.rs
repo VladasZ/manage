@@ -8,6 +8,10 @@ pub trait DataManager<T: Managed> {
 
     fn storage() -> &'static mut DataStorage<T>;
 
+    fn add_with_name(name: &str, create: impl FnOnce() -> T) -> &'static T {
+        Self::storage().entry(name.to_string()).or_insert_with(|| create().into())
+    }
+
     fn remove_with_name(name: &str) {
         Self::storage().remove(name).expect("This name '{name}' is not managed.");
     }

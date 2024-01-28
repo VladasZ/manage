@@ -47,4 +47,18 @@ fn test() {
     let data = Data::get("a");
 
     assert_eq!(data.a, 1);
+
+    Data::add_with_name("b", || Data {
+        a:    COUNTER.fetch_add(1, Ordering::Relaxed),
+        name: "".to_string(),
+    });
+
+    assert_eq!(Data::get("b").a, 2);
+
+    Data::add_with_name("b", || Data {
+        a:    COUNTER.fetch_add(1, Ordering::Relaxed),
+        name: "".to_string(),
+    });
+
+    assert_eq!(Data::get("b").a, 2);
 }
