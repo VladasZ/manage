@@ -39,6 +39,10 @@ pub trait DataManager<T: Managed> {
             .1
     }
 
+    fn get_existing(name: impl ToString) -> Option<Weak<T>> {
+        Self::storage().get(&name.to_string()).map(|a| a.weak())
+    }
+
     fn get(name: impl ToString) -> Weak<T> {
         let name = name.to_string();
         let storage = Self::storage();
