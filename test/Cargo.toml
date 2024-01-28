@@ -11,7 +11,7 @@ crate-type = ["rlib", "staticlib", "dylib"]
 
 [dependencies]
 log = "0.4.20"
-refs = "0.6.13"
+refs = "0.6.14"
 manage = { path = "../manage" }
 
 [dev-dependencies]

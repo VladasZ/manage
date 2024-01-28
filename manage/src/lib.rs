@@ -1,13 +1,16 @@
 use std::collections::HashMap;
 
-use refs::Own;
-
 use crate::{data_manager::DataManager, resource_loader::ResourceLoader};
 
 pub mod data_manager;
+pub mod has_name;
 pub mod managed;
 pub mod resource_loader;
 
-pub type DataStorage<T> = HashMap<String, Own<T>>;
+pub use refs::MainLock;
 
-pub trait Managed: 'static + ResourceLoader + DataManager<Self> {}
+use crate::has_name::HasName;
+
+pub type DataStorage<T> = HashMap<String, Box<T>>;
+
+pub trait Managed: 'static + HasName + ResourceLoader + DataManager<Self> {}
