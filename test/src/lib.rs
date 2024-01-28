@@ -7,7 +7,7 @@ use std::{
     sync::atomic::{AtomicU32, Ordering},
 };
 
-use manage::{data_manager::DataManager, has_name::HasName, managed, resource_loader::ResourceLoader};
+use manage::{data_manager::DataManager, managed, resource_loader::ResourceLoader};
 use refs::set_current_thread_as_main;
 
 static COUNTER: AtomicU32 = AtomicU32::new(0);
@@ -15,12 +15,6 @@ static COUNTER: AtomicU32 = AtomicU32::new(0);
 struct Data {
     a:    u32,
     name: String,
-}
-
-impl HasName for Data {
-    fn name(&self) -> &str {
-        &self.name
-    }
 }
 
 impl ResourceLoader for Data {
