@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    ops::Deref,
+    path::{Path, PathBuf},
+};
 
 use crate::{DataStorage, Managed};
 
@@ -14,6 +17,10 @@ pub trait DataManager<T: Managed> {
 
     fn remove_with_name(name: &str) {
         Self::storage().remove(name).expect("This name '{name}' is not managed.");
+    }
+
+    fn get_existing(name: impl ToString) -> Option<&'static T> {
+        Self::storage().get(&name.to_string()).map(|a| a.deref())
     }
 
     fn get(name: impl ToString) -> &'static T {
