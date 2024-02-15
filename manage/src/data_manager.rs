@@ -10,6 +10,10 @@ pub trait DataManager<T: Managed> {
 
     fn storage() -> &'static mut DataStorage<T>;
 
+    fn free_with_name(name: impl ToString) {
+        Self::storage().remove(&name.to_string());
+    }
+
     fn free(self: Weak<Self>) {
         if self.is_null() {
             return;
@@ -40,7 +44,7 @@ pub trait DataManager<T: Managed> {
     }
 
     fn get_existing(name: impl ToString) -> Option<Weak<T>> {
-        Self::storage().get(&name.to_string()).map(|a| a.weak())
+        Self::storage().get(&name.to_string()).map(Own::weak)
     }
 
     fn get(name: impl ToString) -> Weak<T> {
