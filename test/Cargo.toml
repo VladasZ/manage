@@ -10,8 +10,7 @@ name = "manage_test"
 crate-type = ["rlib", "staticlib", "dylib"]
 
 [dependencies]
-log = "0.4.20"
-refs = "0.6.14"
+refs = { workspace = true }
 manage = { path = "../manage" }
 
 [dev-dependencies]

@@ -3,3 +3,6 @@
 resolver = "2"
 
 members = ["manage", "test"]
+
+[workspace.dependencies]
+refs = "0.6.16"

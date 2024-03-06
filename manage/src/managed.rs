@@ -16,13 +16,10 @@ macro_rules! managed {
 
             fn set_root_path(path: impl Into<std::path::PathBuf>) {
                 let path = path.into();
-                let res = _MANAGED_ROOT_PATH.set(path.to_path_buf());
-                if let Err(err) = res {
-                    log::warn!(
-                        "Managed root path for type {} was already set set.",
-                        stringify!($type)
-                    )
-                }
+                _MANAGED_ROOT_PATH.set(path.to_path_buf()).expect(&format!(
+                    "Managed root path for type {} was already set set.",
+                    stringify!($type)
+                ))
             }
 
             fn storage() -> &'static mut manage::DataStorage<$type> {

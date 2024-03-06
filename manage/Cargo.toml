@@ -1,6 +1,6 @@
 [package]
 name = "manage"
-version = "0.4.6"
+version = "0.4.7"
 edition = "2021"
 authors = ["Vladas Zakrevksis <146100@gmail.com>"]
 description = "Data manager"
@@ -13,8 +13,7 @@ name = "manage"
 crate-type = ["rlib", "staticlib", "dylib"]
 
 [dependencies]
-log = "0.4.20"
-refs = "0.6.15"
+refs = { workspace = true }
 
 [dev-dependencies]
 serial_test = "3.0.0"
