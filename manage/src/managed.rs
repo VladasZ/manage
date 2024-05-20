@@ -2,7 +2,7 @@
 macro_rules! managed {
     ($type:ident) => {
         static _MANAGED_ROOT_PATH: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
-        static _STORAGE: manage::MainLock<manage::DataStorage<$type>> = manage::MainLock::const_new();
+        static _STORAGE: manage::MainLock<manage::DataStorage<$type>> = manage::MainLock::new();
 
         impl manage::Managed for $type {}
 
