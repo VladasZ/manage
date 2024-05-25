@@ -7,8 +7,8 @@ use std::{
     sync::atomic::{AtomicU32, Ordering},
 };
 
-use manage::{data_manager::DataManager, managed, resource_loader::ResourceLoader};
-use refs::set_current_thread_as_main;
+use manage::{data_manager::DataManager, managed, resource_loader::ResourceLoader, ExistsManaged};
+use refs::{set_current_thread_as_main, Weak};
 
 static COUNTER: AtomicU32 = AtomicU32::new(0);
 
@@ -62,4 +62,7 @@ fn test() {
 
     assert_eq!(Data::get("b").a, 2);
     assert_eq!(Data::get("b").get_static().a, 2);
+
+    assert!(data.exists_managed());
+    assert!(!Weak::<Data>::default().exists_managed());
 }
