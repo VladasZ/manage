@@ -5,4 +5,4 @@ resolver = "2"
 members = ["manage", "test"]
 
 [workspace.dependencies]
-refs = "0.13.0"
+refs = "0.14.0"
