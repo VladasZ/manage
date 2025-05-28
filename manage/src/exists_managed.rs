@@ -8,6 +8,6 @@ pub trait ExistsManaged {
 
 impl<T: Managed> ExistsManaged for Weak<T> {
     fn exists_managed(&self) -> bool {
-        unsafe { self.was_initialized() }
+        self.was_initialized()
     }
 }
