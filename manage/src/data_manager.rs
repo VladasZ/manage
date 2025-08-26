@@ -10,6 +10,10 @@ pub trait DataManager<T: Managed> {
 
     fn storage() -> &'static mut DataStorage<T>;
 
+    fn full_path(name: &str) -> PathBuf {
+        Self::root_path().join(name)
+    }
+
     fn free_with_name(name: impl ToString) {
         Self::storage().remove(&name.to_string());
     }
@@ -52,7 +56,7 @@ pub trait DataManager<T: Managed> {
         let storage = Self::storage();
         let val = storage
             .entry(name.clone())
-            .or_insert_with(|| Own::new(T::load_path(&Self::root_path().join(name))));
+            .or_insert_with(|| Own::new(T::load_path(&Self::full_path(&name))));
         val.weak()
     }
 

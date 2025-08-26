@@ -11,8 +11,7 @@ pub mod resource_loader;
 
 pub use exists_managed::*;
 pub use refs::MainLock;
-use refs::Own;
 
-pub type DataStorage<T> = HashMap<String, Own<T>>;
+pub type DataStorage<T> = HashMap<String, refs::Own<T>>;
 
 pub trait Managed: 'static + ResourceLoader + DataManager<Self> {}
